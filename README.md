@@ -1,6 +1,6 @@
 # NSSK Stream Chloride Analysis
 
-**[ONE SENTENCE SUMMARY OF THE PROJECT AND ITS PURPOSE]**
+This analysis describes the occurrence and severity of road salt contamination events in freshwater streams of North Vancouver, BC. It is part of the [Road Salt and Pacific Salmon Success Project](https://www.theroadsaltproject.com), which aims to describe the effects of road salt contamination on streams across the Vancouver Lower Mainland, BC. 
 
 Original analysis code by [Clare L. Kilgour](https://github.com/clarekilgour).
 
@@ -14,7 +14,13 @@ Original analysis code by [Clare L. Kilgour](https://github.com/clarekilgour).
 
 ## Methodology
 
-**[PLACEHOLDER: BRIEF DESCRIPTION OF THE ANALYTICAL APPROACH — CHLORIDE CONVERSION, PULSE DETECTION CRITERIA, BOOTSTRAP EXCEEDANCE METHOD]**
+This analysis uses high-frequency specific conductance data from water quality data loggers installed in Wagg Creek. The specific conductance data is used to estimate chloride concentrations using a conversion equation developed based on ion measurements in grab samples collected at a proximate local stream (Stoney Creek; R. U. Kistritz Consultants Ltd., 2016). The calculated chloride concentrations are compared to the provincial guidelines for chloride (Chronic = 150 mg/L Cl-, Acute = 600 mg/L Cl-). 
+
+Pulses of road salt inputs were identified using each of the provincial guidelines as thresholds. The start of a pulse was identified when the calculated chloride concentration exceeded the guideline of interest for more than one hour. The pulse ended when the specific conductance readings again dropped below the water quality guideline of interest. Consecutive exceedances of the given guideline that are separated by less than one hour were considered one pulse. 
+
+**[DISCUSS 5-in-30 SIMULATION, PROBABILITY OF EXCEEDANCE]**
+
+Further details about the methods of the analysis can be found in Kilgour et al. (2025).
 
 ## Setup
 
@@ -64,9 +70,9 @@ Each run produces a parent output directory containing the following resources:
 
 ## Further Reading
 
-- [LINK TO EXTERNAL RESOURCE 1]
-- [LINK TO EXTERNAL RESOURCE 2]
-- [LINK TO EXTERNAL RESOURCE 3]
+- [Kilgour et al. 2025. Tracking road salt contamination through community monitoring: Annual surface water chloride trends in streams of an urban area, the Vancouver Lower Mainland, B.C., Canada.](https://link.springer.com/article/10.1007/s00244-025-01156-3) 
+- [Winter et al. 2026. The effects of pulse exposures to road salt at various stages of early development in rainbow trout (_Oncorhychus mykiss_)](https://www.sciencedirect.com/science/article/pii/S1532045625002157)
+- [Winter et al. 2026. Road salt creates a slippery slope for Pacific salmon: environmentally realistic salt pulses have lethal and sublethal effects on developing coho salmon (_Oncorhynchus kisutch_)](https://www.sciencedirect.com/science/article/pii/S0166445X26000330)
 
 ## License
 
