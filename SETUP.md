@@ -85,7 +85,7 @@ R is installed to `$PREFIX/bin/R`. Add that directory to your `PATH` or invoke `
 ### Windows
 
 1. Download the installer from CRAN: https://cran.r-project.org/bin/windows/base/.
-2. Run the downloaded `.exe` and accept the defaults. This installs R to `C:\Program Files\R\R-4.x.x` by default depending on version.
+2. Run the downloaded `.exe` and accept the defaults. This installs R to `C:\Program Files\R\R-<version>`.
 3. Add R's `bin` directory to the PATH so `Rscript` resolves from any shell:
    - Settings → System → About → Advanced system settings → Environment Variables
    - Under "System variables", select `Path` → Edit → New
@@ -106,7 +106,9 @@ Launch an R session at the project root:
 ```
 R
 ```
+
 Within the session, install project dependencies:
+
 ```r
 install.packages(c("tidyverse", "lubridate", "gt", "ragg", "conflicted", "fs"))
 ```
