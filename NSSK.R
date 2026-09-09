@@ -75,6 +75,7 @@ if (!interactive()) {
 source(file.path(.script_dir, "render.R")) # save_gt_png: renders gt tables to PNG
 source(file.path(.script_dir, "context.R")) # get_context, input_file_arg, output_dir_arg: resolves input file and output directory
 source(file.path(.script_dir, "theme.R"))  # .theme_font, build_theme: plot theming
+source(file.path(.script_dir, "io.R"))     # write_df_to_csv: writes CSV with LF line endings on every platform
 
 ########################################
 ## 1.1.2 Shell argument processing ----
@@ -234,7 +235,7 @@ Wagg <- DataWide %>%
   subset(!is.na(`Specific conductance`))
 #254,548 obs.
 
-write.csv(Wagg, wagg_path, row.names = FALSE)
+write_df_to_csv(Wagg, wagg_path)
 
 # 4 FINDING PULSES ------------------------------------------------------------
 ## 4.1 Short-term acute pulses (exceed the acute water quality guideline) -----
@@ -282,7 +283,7 @@ STAPulses <- Wagg %>%
     .groups = "drop"
   ) %>%
   filter(Duration > 0) #Remove pulses with zero duration
-write.csv(STAPulses, stapulses_path, row.names = FALSE)
+write_df_to_csv(STAPulses, stapulses_path)
 
 ## 4.2 Long-term acute pulses (exceed the chronic water quality guideline) ----
 LTCPulses <- Wagg %>%
@@ -329,7 +330,7 @@ LTCPulses <- Wagg %>%
     .groups = "drop"
   ) %>%
   filter(Duration > 0) #Remove pulses with zero duration
-write.csv(LTCPulses, ltcpulses_path, row.names = FALSE)
+write_df_to_csv(LTCPulses, ltcpulses_path)
 
 # just the pulses which exceed the long-term chronic guideline, but not the acute
 LTCPulses_unique <- anti_join(LTCPulses, STAPulses, by = c("PeakDate", "PeakValue"))
@@ -612,7 +613,7 @@ bootstrap_sampling_monthly <- function(data, n_iterations, guideline, n_samples)
 }
 
 # Initialize .csv file 
-write.csv(combined_results, combined_path, row.names = FALSE)
+write_df_to_csv(combined_results, combined_path)
 
 # Run in batches
 for (i in seq(1, total_iterations, by = batch_size)) {
@@ -642,8 +643,7 @@ for (i in seq(1, total_iterations, by = batch_size)) {
   
   
   # Write batch results to the .csv file
-  write.table(batch_results, combined_path, append = TRUE, sep = ",",
-              row.names = FALSE, col.names = FALSE)  # Avoid writing headers again
+  write_df_to_csv(batch_results, combined_path, append = TRUE)  # Avoid writing headers again
 }
 
 combined_results <- read.csv(combined_path)
