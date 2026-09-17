@@ -24,11 +24,11 @@ Further details about the methods of the analysis can be found in Kilgour et al.
 
 ## Setup
 
-See [SETUP.md](SETUP.md) for installation instructions for Mac, Unix, and Windows.
+See [doc/SETUP.md](doc/SETUP.md) for installation instructions for Mac, Unix, and Windows.
 
 ## Running the Analysis
 
-See [RUN.md](RUN.md) for instructions on running headlessly with `Rscript` or interactively in RStudio.
+See [doc/RUN.md](doc/RUN.md) for instructions on running headlessly with `Rscript` or interactively in RStudio.
 
 ## Input
 

@@ -11,7 +11,33 @@
 rm(list=ls()) #this cleans up the workspace (gets rid of variables etc)
 # no-op in Rscript (fresh environment per invocation)
 
-## 1.1 Load Packages ----
+## 1.1 Resolve script directory ----
+# Resolve the directory containing this script so packages_setup.R and the files below
+# can be sourced by path regardless of the working directory at invocation time.
+# Rscript:   derived from --file= in commandArgs(trailingOnly = FALSE)
+# RStudio:   falls back to getwd() — assumes the project was opened via the .Rproj file,
+#            which sets the working directory to the project root.
+# Deliberately base-R only (no fs::) — this runs before packages_setup.R, which is what
+# installs fs in the first place.
+.script_dir <- if (!interactive()) {
+  file_arg <- grep("--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+  if (length(file_arg) == 0) {
+    stop("--file= not found in commandArgs — invoke the script via: Rscript NSSK.R <input_csv_file>")
+  }
+  dirname(normalizePath(sub("--file=", "", file_arg[1]), winslash = "/", mustWork = FALSE))
+} else {
+  getwd()
+}
+
+## Ensure required packages are installed ----
+# Must run before any library() call below. Sourcing packages_setup.R only defines
+# required_packages/cran_mirrors/install_missing_packages() -- it does not install
+# anything by itself (except when run standalone as `Rscript packages_setup.R`, its own
+# manual/testing path). This call is what actually triggers install on a real run.
+source(file.path(.script_dir, "packages_setup.R"))
+install_missing_packages(required_packages, cran_mirrors)
+
+## Load Packages ----
 
 # conflicted must be loaded before other packages so its shims are in place
 # when conflicting names are introduced. conflict_prefer() calls must come after
@@ -24,7 +50,6 @@ library(lubridate)
 library(gt)
 library(grid)
 library(ragg)
-library(fs)
 
 # Resolve ambiguities between dplyr and stats for functions used in the analysis.
 # dplyr masking stats is already the default behaviour due to load order, but
@@ -57,21 +82,8 @@ if (!interactive()) {
 }
 ########################################
 
-## 1.1.1 Source files ----
-# Resolve the directory containing this script so external files can be sourced by path
-# regardless of the working directory at invocation time.
-# Rscript:   derived from --file= in commandArgs(trailingOnly = FALSE)
-# RStudio:   falls back to getwd() — assumes the project was opened via the .Rproj file,
-#            which sets the working directory to the project root.
-.script_dir <- if (!interactive()) {
-  file_arg <- grep("--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
-  if (length(file_arg) == 0) {
-    stop("--file= not found in commandArgs — invoke the script via: Rscript NSSK.R <input_csv_file>")
-  }
-  as.character(fs::path_dir(fs::path_abs(sub("--file=", "", file_arg[1]))))
-} else {
-  getwd()
-}
+## Source files ----
+# .script_dir was resolved in section 1.1, above, before packages_setup.R ran.
 source(file.path(.script_dir, "render.R")) # save_gt_png: renders gt tables to PNG
 source(file.path(.script_dir, "context.R")) # get_context, input_file_arg, output_dir_arg: resolves input file and output directory
 source(file.path(.script_dir, "theme.R"))  # .theme_font, build_theme: plot theming
