@@ -3,6 +3,11 @@
 # Run from the project root:
 #   Rscript tests/test-context.R
 
+# devtools is never library()'d here -- it's only installed to satisfy RStudio's IDE-level
+# "Run Tests" integration (a separate concern from testthat itself; see doc/SETUP.md).
+required_packages <- c("devtools", "fs", "testthat")
+source("packages_setup.R")
+check_installed_packages(required_packages)
 library(testthat)
 library(fs)
 

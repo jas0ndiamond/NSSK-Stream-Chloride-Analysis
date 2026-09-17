@@ -30,12 +30,23 @@ rm(list=ls()) #this cleans up the workspace (gets rid of variables etc)
 }
 
 ## Ensure required packages are installed ----
-# Must run before any library() call below. Sourcing packages_setup.R only defines
-# required_packages/cran_mirrors/install_missing_packages() -- it does not install
-# anything by itself (except when run standalone as `Rscript packages_setup.R`, its own
-# manual/testing path). This call is what actually triggers install on a real run.
+# Must run before any library() call below.
+#
+# Some entries are already transitive dependencies of others (conflicted/lubridate/ragg
+# via tidyverse; fs via gt) but are listed and verified independently regardless, since
+# install.packages() de-dupes the resolved graph.
+required_packages <- c(
+  "conflicted",
+  "fs", # context.R calls fs::path_abs()
+  "gt",
+  "lubridate",
+  "ragg",
+  "systemfonts", # theme.R calls systemfonts::system_fonts()
+  "tidyverse"
+)
+
 source(file.path(.script_dir, "packages_setup.R"))
-install_missing_packages(required_packages, cran_mirrors)
+check_installed_packages(required_packages)
 
 ## Load Packages ----
 
@@ -88,6 +99,8 @@ source(file.path(.script_dir, "render.R")) # save_gt_png: renders gt tables to P
 source(file.path(.script_dir, "context.R")) # get_context, input_file_arg, output_dir_arg: resolves input file and output directory
 source(file.path(.script_dir, "theme.R"))  # .theme_font, build_theme: plot theming
 source(file.path(.script_dir, "io.R"))     # write_df_to_csv: writes CSV with LF line endings on every platform
+
+cat("Setup complete. Running analysis...\n")
 
 ########################################
 ## 1.1.2 Shell argument processing ----

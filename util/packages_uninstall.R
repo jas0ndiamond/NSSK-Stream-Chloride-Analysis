@@ -1,31 +1,43 @@
-# tests/util/packages_uninstall.R — removes the 7 CRAN packages packages_setup.R installs,
-# so this machine's real R environment can be reset to exercise packages_setup.R's
-# not-found/installing path directly, without Docker.
+# util/packages_uninstall.R — removes the 7 CRAN packages util/packages_install.R (and
+# NSSK.R) installs, so this machine's real R environment can be reset to exercise
+# packages_setup.R's not-found/installing path directly, without Docker.
+#
+# This is a test/dev-support utility, not part of the NSSK.R analysis workflow. You do not
+# need to run this manually to run NSSK.R -- it exists solely to reset a machine's package
+# state so packages_setup.R's install path can be exercised and verified again.
 #
 # This mutates your real R library (not a disposable container — see
 # tests/docker-packages-setup-test.sh for a fully isolated alternative that never touches
 # it). Nothing here is destroyed beyond reinstallability: re-running NSSK.R (or
-# `Rscript packages_setup.R` directly) reinstalls everything from the same CRAN mirror.
-# Only these 7 packages are removed — their already-installed transitive dependencies are
-# left alone, so a local reinstall after this is much faster than a true from-scratch one
-# (measured at ~25 min in a clean container; see tests/docker-packages-setup-test.sh).
+# `Rscript util/packages_install.R` directly) reinstalls everything from the same CRAN
+# mirror. Only these 7 packages are removed — their already-installed transitive
+# dependencies are left alone, so a local reinstall after this is much faster than a true
+# from-scratch one (measured at ~25 min in a clean container; see
+# tests/docker-packages-setup-test.sh).
 #
 # Usage:
-#   Rscript tests/util/packages_uninstall.R      # asks for y/n confirmation before removing
-#   Rscript tests/util/packages_uninstall.R -y   # skips the confirmation
+#   Rscript util/packages_uninstall.R      # asks for y/n confirmation before removing
+#   Rscript util/packages_uninstall.R -y   # skips the confirmation
+#
+# If you then want to verify the reinstall from an already-open RStudio session, restart R
+# first (Session > Restart R). requireNamespace() checks already-loaded namespaces before
+# ever touching disk, so a session that had these packages loaded before this ran will keep
+# reporting them "available" from memory and skip reinstalling, even though the files here
+# just got deleted by this (separate) process.
 
-# Mirrors packages_setup.R's required_packages exactly. Duplicated rather than sourced —
-# sourcing packages_setup.R would trigger its own install step, which is wrong here (most
-# obviously when these packages are already absent: it would install them just so this
-# script could immediately remove them again). Keep this in sync if that list changes.
+# Mirrors NSSK.R's required_packages exactly. Duplicated rather than sourced from
+# util/packages_install.R — sourcing it would trigger a real check_installed_packages()
+# install call, which is wrong here (most obviously when these packages are already
+# absent: it would install them just so this script could immediately remove them again).
+# Keep this in sync if that list changes.
 required_packages <- c(
   "conflicted",
-  "tidyverse",
-  "lubridate",
+  "fs", # context.R calls fs::path_abs()
   "gt",
+  "lubridate",
   "ragg",
-  "fs",
-  "systemfonts"
+  "systemfonts", # theme.R calls systemfonts::system_fonts()
+  "tidyverse"
 )
 
 skip_confirm <- "-y" %in% commandArgs(trailingOnly = TRUE)
@@ -68,4 +80,4 @@ if (!skip_confirm) {
 
 message("packages_uninstall.R: removing: ", paste(installed, collapse = ", "))
 remove.packages(installed)
-message("packages_uninstall.R: done. Re-run NSSK.R or `Rscript packages_setup.R` to reinstall.")
+message("packages_uninstall.R: done. Re-run NSSK.R or `Rscript util/packages_install.R` to reinstall.")

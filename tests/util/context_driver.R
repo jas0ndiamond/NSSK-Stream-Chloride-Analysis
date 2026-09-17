@@ -23,9 +23,17 @@ library(fs)
   getwd()
 }
 
-# context.R lives two directories up, in the project root; .script_dir is the name
-# context.R expects to find in its sourcing environment (used to normalize its defaults).
-.script_dir <- as.character(fs::path_abs(file.path(.driver_dir, "..", "..")))
+# context.R lives in the project root; .script_dir is the name context.R expects to find
+# in its sourcing environment (used to normalize its defaults). The two branches above are
+# NOT at the same depth: the headless .driver_dir is this script's own directory (two
+# levels below the project root, tests/util/), so it needs ".." twice; the interactive
+# .driver_dir is already getwd(), assumed to be the project root itself (RStudio opened via
+# the .Rproj file), so it needs no further traversal at all.
+.script_dir <- if (!interactive()) {
+  as.character(fs::path_abs(file.path(.driver_dir, "..", "..")))
+} else {
+  .driver_dir
+}
 source(file.path(.script_dir, "context.R")) # get_context, input_file_arg, output_dir_arg
 
 ctx <- get_context()
