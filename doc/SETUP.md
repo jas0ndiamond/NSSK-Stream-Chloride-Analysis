@@ -5,11 +5,10 @@
 Install R from [CRAN](https://cran.r-project.org). Tested with R 4.6.
 
 R packages this project needs (`tidyverse`, `gt`, `ragg`, etc.) do not need a manual install
-step on any platform — `packages_setup.R` attempts to install any that are missing,
-automatically, the first time `NSSK.R` runs (see "R Packages" below). What the platform
-sections below cover is R itself and, on Linux, the underlying OS/system libraries those R
-packages need in order to compile from source — `packages_setup.R` has no way to invoke
-`apt`/`brew` itself, so those remain manual steps, most notably on Linux.
+step on any platform — this happens automatically the first time `NSSK.R` runs. What the
+platform sections below cover is R itself and, on Linux, the underlying OS/system libraries
+those R packages need in order to compile from source, which still require a manual
+`apt`/`brew` step, most notably on Linux.
 
 ### Mac
 
@@ -33,8 +32,8 @@ Install R via your distribution's package manager. On Debian/Ubuntu:
 sudo apt-get install r-base r-base-dev
 ```
 
-`packages_setup.R` (see "R Packages" below) compiles CRAN packages from source on Linux, which
-needs a few system libraries beyond `r-base-dev` itself. On Debian/Ubuntu:
+Installing this project's R packages compiles some of them from source on Linux, which needs
+a few system libraries beyond `r-base-dev` itself. On Debian/Ubuntu:
 
 ```bash
 sudo apt-get install build-essential gfortran pkg-config libcurl4-openssl-dev libssl-dev \
@@ -43,15 +42,6 @@ sudo apt-get install build-essential gfortran pkg-config libcurl4-openssl-dev li
   libuv1-dev libv8-dev
 ```
 
-- `pkg-config` — used by `ragg`/`systemfonts`/`textshaping`'s (and `curl`'s) `configure`
-  scripts to locate the libraries above; only ever a `Suggests` of the packages here, so
-  `apt-get install` won't pull it in on its own
-- `libuv1-dev` — required to compile `fs`
-- `libv8-dev` (or `libnode-dev` as an alternative V8 provider) — required to compile `V8`, a
-  dependency of `gt` (via `juicyjuice`)
-- the rest cover `ragg`/`systemfonts` (fonts, image formats) and `tidyverse`'s own compiled
-  dependencies (curl, xml2, openssl)
-
 Install Helvetica-compatible fonts via apt:
 
 ```bash
@@ -59,10 +49,8 @@ sudo apt-get install fonts-texgyre fonts-urw-base35 fonts-liberation
 ```
 
 - `fonts-texgyre` — TeX Gyre Heros (primary; purpose-built Helvetica clone, refined from Nimbus Sans)
-- `fonts-urw-base35` — Nimbus Sans (secondary; direct Helvetica clone from URW, precursor to TeX Gyre Heros)
+- `fonts-urw-base35` — Nimbus Sans (secondary fallback; direct Helvetica clone from URW, precursor to TeX Gyre Heros)
 - `fonts-liberation` — Liberation Sans (tertiary fallback; Arial-metric compatible, not Helvetica letterforms)
-
-The script warns at startup if none of these are found.
 
 #### Debian 13 — build R 4.6.1 from source
 
@@ -82,10 +70,8 @@ sudo apt-get install -y texlive-fonts-extra texlive-latex-extra
 Download the R 4.6.1 source from [CRAN](https://cran.r-project.org/src/base/), extract, and build:
 
 ```bash
-PREFIX="$HOME/opt/r-lang-4.6.1"   # adjust to your preferred install location
-
 ./configure \
-  --prefix="$PREFIX" \
+  --prefix="/home/user/r-lang" \
   --enable-R-shlib \
   --enable-memory-profiling \
   --with-cairo \
@@ -95,11 +81,11 @@ PREFIX="$HOME/opt/r-lang-4.6.1"   # adjust to your preferred install location
   --with-lapack \
   --with-blas \
   --with-tcltk
-make -j6
+make -j"$(nproc)"
 make install
 ```
 
-R is installed to `$PREFIX/bin/R`. Add that directory to your `PATH` or invoke `Rscript` via its full path.
+R is installed to `/home/user/r-lang/bin/R`. Add that directory to your `PATH` or invoke `Rscript` via its full path.
 
 ### Windows
 
@@ -115,23 +101,3 @@ R is installed to `$PREFIX/bin/R`. Add that directory to your `PATH` or invoke `
      ```
 
 Pre-compiled binaries are available for all required packages — no additional build tools are needed for a standard installation.
-
----
-
-## R Packages
-
-`packages_setup.R` attempts to install any required R package that isn't already present —
-`NSSK.R` sources it before loading any package, so this happens automatically the first time
-you run `NSSK.R`, on every platform. It checks each required package by name, and installs
-anything missing (with dependencies) from a short list of Canadian CRAN mirrors (Manitoba
-Unix User Group first, with the University of Waterloo CS Club and an individual Canadian
-mirror as fallbacks — installation still proceeds if the first is unreachable). It stops with
-a clear error if installation fails on all of them.
-
-To pre-install without running the full analysis:
-
-```bash
-Rscript packages_setup.R
-```
-
-`grid` is included with base R and does not need to be installed separately.
