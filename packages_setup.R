@@ -7,36 +7,33 @@
 # util/packages_install.R (a standalone driver for NSSK.R's list) for the pattern.
 #
 # Exports:
-#   cran_mirrors                — default CRAN mirrors, first preferred
 #   check_installed_packages()  — installs whatever's missing from a caller-supplied package
 #                                  list, stops with a clear error if any are still missing after
 
-# CRAN mirrors (https://cran.r-project.org/mirrors.html)
-cran_mirrors_canada <- c(
-  CRANmuug   = "https://muug.ca/mirror/cran/",              # Manitoba Unix User Group
-  CRAN       = "https://mirror.csclub.uwaterloo.ca/CRAN/",  # University of Waterloo CS Club
-  CRANrafal  = "https://cran.mirror.rafal.ca/"              # Rafal Rzeczkowski - private
+# CRAN mirrors (https://cran.r-project.org/mirrors.html). Internal -- not part of this
+# file's interface; only used to build check_installed_packages()'s default repos below.
+.cran_mirrors_canada <- c(
+  CRANmuug	= "https://muug.ca/mirror/cran/",              # Manitoba Unix User Group
+  CRANwaterloo	= "https://mirror.csclub.uwaterloo.ca/CRAN/",  # University of Waterloo CS Club
+  CRANrafal	= "https://cran.mirror.rafal.ca/"              # Rafal Rzeczkowski - private
 )
 
 # Mirrors from countries with an active direct undersea cable link to Canada (UK: EXA
-# Express; Iceland: Greenland Connect; Japan: Topaz), used as fallback after Canada. 
-# Ordered by measured download speed, fastest first. Not robustly tested and may vary in 
-# the future.
-cran_mirrors_secondary <- c(
+# Express; Iceland: Greenland Connect; Japan: Topaz), used as fallback after Canada.
+# Ordered by measured download speed, fastest first. Not robustly tested and may vary in
+# the future. Internal, same as .cran_mirrors_canada above.
+.cran_mirrors_secondary <- c(
   CRANiceland = "https://cran.hafro.is/",                    # primary   -- Iceland; run by Hafrannsóknastofnun, Iceland's government Marine and Freshwater Research Institute
   CRANbristol = "https://www.stats.bris.ac.uk/R/",           # secondary -- UK; run by the University of Bristol's School of Mathematics
   CRANjapan   = "https://ftp.yz.yamagata-u.ac.jp/pub/cran/"  # tertiary  -- Japan; run by Yamagata University's Networking and Computing Service Center, Faculty of Engineering
 )
 
-cran_mirrors <- c(cran_mirrors_canada, cran_mirrors_secondary)
-
-# Installs whichever of pkgs are missing, from repos, with dependencies.
+# Installs whichever of pkgs are missing, from supplied or default cran mirrrors, with respective dependencies.
 #
 # install_options is a named list merged over this function's own install.packages() defaults
 # (pkgs, repos, dependencies = NA) -- e.g. install_options = list(dependencies = FALSE) to
-# override. Named install_options, not options, because a parameter named `options` would
-# shadow base::options(), which install.packages() itself may need.
-check_installed_packages <- function(pkgs, repos = cran_mirrors, install_options = list()) {
+# override.
+check_installed_packages <- function(pkgs, repos = c(.cran_mirrors_canada, .cran_mirrors_secondary), install_options = list()) {
   if (length(pkgs) == 0) {
     stop("check_installed_packages: pkgs must not be empty.", call. = FALSE)
   }
@@ -59,12 +56,10 @@ check_installed_packages <- function(pkgs, repos = cran_mirrors, install_options
     install_options
   )
 
-  # Compile with make -jN instead of make's serial default. 
+  # Compile with make -jN instead of make's serial default on linux systems.
   #
-  # No-op on Windows/macOS in the normal case, since install.packages() prefers CRAN's
-  # precompiled binaries there and no `make` runs at all. Real speedup on Linux, where
-  # every package builds from source; also applies on Windows/macOS if a source build
-  # is forced (no binary available yet, or pkgType = "source").
+  # No-op on Windows/macOS in the normal case, since install.packages() uses CRAN's
+  # precompiled binaries there and no `make` runs at all. 
   ncores <- tryCatch(parallel::detectCores(), error = function(e) NA_integer_)
   if (!is.na(ncores) && ncores > 1) {
     old_makeflags <- Sys.getenv("MAKEFLAGS", unset = NA)
@@ -90,7 +85,7 @@ check_installed_packages <- function(pkgs, repos = cran_mirrors, install_options
       "check_installed_packages: failed to install package(s): ",
       paste(still_missing, collapse = ", "), ".\n",
       if (!is.null(install_error)) paste0("install.packages() error: ", install_error, "\n") else "",
-      "Repo(s) used: ", paste(repos, collapse = ", "), "\n",
+      "Mirror(s) used: ", paste(repos, collapse = ", "), "\n",
       "Check network connectivity and mirror availability, and that the R library path ",
       "is writable (a common cause under non-interactive Rscript runs). ",
       "See doc/SETUP.md for platform-specific system library requirements.",
