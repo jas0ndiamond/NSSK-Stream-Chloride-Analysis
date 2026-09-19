@@ -6,6 +6,8 @@
 # NSSK.R (its own required_packages), tests/test-context.R (testthat/devtools/fs), and
 # util/packages_install.R (a standalone driver for NSSK.R's list) for the pattern.
 #
+# Not completely watertight, but should work for the vast majority of cases.
+#
 # Exports:
 #   check_installed_packages()  — installs whatever's missing from a caller-supplied package
 #                                  list, stops with a clear error if any are still missing after
